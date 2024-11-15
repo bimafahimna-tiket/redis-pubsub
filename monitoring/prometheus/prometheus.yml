@@ -1,0 +1,18 @@
+global:
+  scrape_interval: 10s
+
+scrape_configs:
+  - job_name: 'redis-pubsub'
+    docker_sd_configs:
+      - host: "unix:///var/run/docker.sock"
+    #     filters:
+    #       - label="logging=promtail"  # Filter by logging label
+    #       - label="web.httpserver=app"  # Filter by web.httpserver label
+    static_configs:
+      - targets: ['app-1:8000','app-2:8000','app-3:8000']
+    relabel_configs:
+      - source_labels: [__meta_docker_container_name]
+        target_label: container_name
+    #   - source_labels: [__meta_docker_container_label_logging]
+    #     target_label: logging
+    # metrics_path: '/metrics'

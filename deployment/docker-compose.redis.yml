@@ -1,0 +1,11 @@
+services:
+  redis:
+    container_name: redis
+    image: redis:7.4.0-alpine
+    volumes:
+      - "redis-node:/var/lib/redis"
+    ports:
+      - "6378:6379"
+
+volumes:
+  redis-node:
