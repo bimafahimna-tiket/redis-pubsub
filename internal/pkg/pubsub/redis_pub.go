@@ -24,3 +24,10 @@ func (p *redisPub) PublishMessage(ctx context.Context, channel, msg string) erro
 	}
 	return nil
 }
+
+func (p *redisPub) PublishCache(ctx context.Context, channel, cache string) error {
+	if err := p.client.Publish(ctx, channel, cache).Err(); err != nil {
+		return fmt.Errorf("failed to publish message to channel %s: %v", channel, err)
+	}
+	return nil
+}

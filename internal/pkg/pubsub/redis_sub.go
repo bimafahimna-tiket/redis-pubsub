@@ -2,9 +2,11 @@ package pubsub
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"os"
 	"os/signal"
+	"poc-redis-pubsub/internal/cache"
 	"poc-redis-pubsub/internal/pkg/logger"
 	"syscall"
 
@@ -34,7 +36,9 @@ func (s *redisSub) Subscribe(channel string) error {
 	conn := s.client.Subscribe(ctx, channel)
 	s.connection[channel] = conn
 	if err := conn.Ping(ctx); err != nil {
-		return fmt.Errorf("failed to subscribe channel %s: %v", channel, err)
+		wrapErr := fmt.Errorf("failed to subscribe channel %s: %v", channel, err)
+		logger.Log.Errorf(wrapErr.Error())
+		return wrapErr
 	}
 	go s.listen(ctx, channel)
 	return nil
@@ -68,26 +72,46 @@ func (s *redisSub) listen(ctx context.Context, channel string) {
 	conn, _ := s.getConnection(channel)
 	ctx, cancel := context.WithCancel(ctx)
 	s.cancelFunc[channel] = cancel
-	defer cancel()
 
-	stop := make(chan os.Signal, 1)
-	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
+	unsubscribe := make(chan os.Signal, 1)
 
 	go func() {
 		logger.Log.Infof("Subscribed to channel %s", channel)
 		for {
 			select {
 			case <-ctx.Done():
-				stop <- syscall.SIGINT
+				unsubscribe <- syscall.SIGINT
 				return
 			case msg := <-conn.Channel():
-				logger.Log.Infof("Processing message from %s channel: %s", channel, msg.Payload)
+				var p Payload
+				err := json.Unmarshal([]byte(msg.Payload), &p)
+				if err != nil {
+					logger.Log.Errorf("error unmarshalling")
+					return
+				}
+				if p.Type == TypeCache {
+					switch {
+					case p.Operation == OperationAdd:
+						cache.Cache[p.Msg] = nil
+					case p.Operation == OperationRemove:
+						delete(cache.Cache, p.Msg)
+					}
+					logger.Log.Info("Cache updated: ", p.Msg)
+				} else {
+					logger.Log.Infof("Processing message from %s channel: %s", channel, p.Msg)
+				}
 			}
 		}
 	}()
+	stopListen := make(chan os.Signal, 1)
+	signal.Notify(stopListen, os.Interrupt, syscall.SIGTERM)
 
-	<-stop
-	conn.Close()
+	select {
+	case <-stopListen:
+		defer cancel()
+		conn.Close()
+	case <-unsubscribe:
+		conn.Close()
+	}
 	logger.Log.Infof("Unsubscribed from channel %s", channel)
-
 }
