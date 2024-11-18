@@ -11,5 +11,6 @@ type MetricDto struct {
 	ServiceGroup metrics.ServiceGroup
 	ErrorCode    metrics.ErrorCode
 	HttpCode     int
+	CustomTag    map[string]interface{}
 	StartTime    time.Time
 }

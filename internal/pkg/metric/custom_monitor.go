@@ -2,6 +2,7 @@ package metric
 
 import (
 	"poc-redis-pubsub/internal/config"
+	"poc-redis-pubsub/internal/pkg/logger"
 
 	"github.com/tiket/TIX-HOTEL-UTILITIES-GO/metrics"
 )
@@ -11,11 +12,15 @@ import (
 // }
 
 func NewMonitor(config *config.Config) metrics.MonitorStatsd {
-	monitorStatsD, _ := metrics.NewMonitor(
-		"localhost",
-		"8125",
-		"REDIS-PUBSUB",
+	monitorStatsD, err := metrics.NewMonitor(
+		config.Monitor.Domain,
+		config.Monitor.Port,
+		config.Monitor.ServiceName,
 	)
+	if err != nil {
+		logger.Log.Errorf("failed connect to monitor stats d: ", err)
+		return nil
+	}
 	// return Holder{Monitor: monitorStatsD}
 	return monitorStatsD
 }

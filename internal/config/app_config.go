@@ -7,8 +7,6 @@ import (
 )
 
 type AppConfig struct {
-	ServerHost        string
-	ServerPort        string
 	ServerAddress     string
 	ServerGracePeriod time.Duration
 }
@@ -20,8 +18,6 @@ func initAppConfig() AppConfig {
 	}
 
 	return AppConfig{
-		ServerHost:        os.Getenv("SERVER_DOMAIN"),
-		ServerPort:        os.Getenv("SERVER_PORT"),
 		ServerAddress:     os.Getenv("SERVER_ADDRESS"),
 		ServerGracePeriod: gracePeriod,
 	}
