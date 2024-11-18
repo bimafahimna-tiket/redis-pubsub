@@ -11,7 +11,7 @@ dockerdown:
 	docker compose down $(BUILD) $(D)
 
 image:
-	docker build --ssh default=${HOME}/.ssh/id_ed25519 .  
+	docker compose build --ssh default=${HOME}/.ssh/id_ed25519
 
 redisup:
 	docker compose -f ./deployment/docker-compose.redis.yml up $(BUILD) $(D)

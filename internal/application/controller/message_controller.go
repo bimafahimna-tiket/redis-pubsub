@@ -59,3 +59,28 @@ func (c *MessageController) SendMessagePubSub(ec echo.Context) error {
 	util.SendMetricLatency(metric)
 	return ec.String(http.StatusOK, res)
 }
+
+func (c *MessageController) GetAllCache(ec echo.Context) error {
+	ctx := ec.Request().Context()
+	res, err := c.messageService.GetAllCache(ctx)
+	if err != nil {
+		return err
+	}
+	return ec.JSON(http.StatusOK, res)
+}
+
+func (c *MessageController) UpdateCache(ec echo.Context) error {
+	var req dto.UpdateCacheRequest
+	err := ec.Bind(&req)
+	if err != nil {
+		return err
+	}
+
+	ctx := ec.Request().Context()
+	res, err := c.messageService.UpdateCache(ctx, req)
+	if err != nil {
+		return err
+	}
+
+	return ec.String(http.StatusOK, res)
+}

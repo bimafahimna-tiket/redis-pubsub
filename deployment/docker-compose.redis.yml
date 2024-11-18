@@ -6,6 +6,12 @@ services:
       - "redis-node:/var/lib/redis"
     ports:
       - "6378:6379"
+    networks:
+      - dev-net
 
 volumes:
   redis-node:
+
+networks:
+  dev-net:
+    external: true

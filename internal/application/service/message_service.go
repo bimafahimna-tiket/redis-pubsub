@@ -2,7 +2,9 @@ package service
 
 import (
 	"context"
+	"poc-redis-pubsub/internal/cache"
 	"poc-redis-pubsub/internal/domain/dto"
+	"poc-redis-pubsub/internal/pkg/logger"
 	"poc-redis-pubsub/internal/pkg/mq"
 	"poc-redis-pubsub/internal/pkg/pubsub"
 )
@@ -10,6 +12,8 @@ import (
 type MessageService interface {
 	SendMessage(ctx context.Context, message dto.MessageRequest) (string, error)
 	SendMessagePubSub(ctx context.Context, message dto.MessagePubSubRequest) (string, error)
+	GetAllCache(ctx context.Context) (dto.GetAllCacheResponse, error)
+	UpdateCache(ctx context.Context, cache dto.UpdateCacheRequest) (string, error)
 }
 
 type messageService struct {
@@ -36,8 +40,27 @@ func (s *messageService) SendMessage(ctx context.Context, message dto.MessageReq
 }
 
 func (s *messageService) SendMessagePubSub(ctx context.Context, message dto.MessagePubSubRequest) (string, error) {
-	if err := s.publisher.PublishMessage(ctx, "msg", message.Msg); err != nil {
+	data := pubsub.NewJsonPayload(pubsub.TypeMessage, "", message.Msg)
+	if err := s.publisher.PublishMessage(ctx, "msg", data); err != nil {
 		return "", err
 	}
 	return "Success Sending Message", nil
+}
+
+func (s *messageService) GetAllCache(ctx context.Context) (dto.GetAllCacheResponse, error) {
+	var res []string
+	for key := range cache.Cache {
+		res = append(res, key)
+	}
+	return dto.GetAllCacheResponse{Cache: res}, nil
+}
+
+func (s *messageService) UpdateCache(ctx context.Context, cache dto.UpdateCacheRequest) (string, error) {
+	data := pubsub.NewJsonPayload(pubsub.TypeCache, cache.Operation, cache.Cache)
+	err := s.publisher.PublishCache(ctx, "cache", data)
+	if err != nil {
+		logger.Log.Error("failed to update cache")
+		return "Failed to update cache", nil
+	}
+	return "Successfully update cache", nil
 }

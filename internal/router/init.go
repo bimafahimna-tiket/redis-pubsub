@@ -22,5 +22,8 @@ func Init(opts *controller.ControllerOpts) http.Handler {
 	e.POST("/pubsub/subscribe", opts.SubscribeToChannel)
 	e.POST("/pubsub/unsubscribe", opts.UnsubscribeToChannel)
 	e.POST("/pubsub/message", opts.SendMessagePubSub)
+	e.GET("/cache", opts.GetAllCache)
+	e.PATCH("/pubsub/cache", opts.UpdateCache)
+
 	return e
 }
