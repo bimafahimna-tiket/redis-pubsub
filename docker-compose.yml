@@ -8,17 +8,18 @@ services:
       context: .
       dockerfile: Dockerfile
       target: app
-    # ports:
-    #   - "8000:8000"
+    ports:
+      - "8000:8000"
     env_file: .env
     environment:
       # - SERVER_ADDRESS=${SERVER_PORT}
       - SERVER_ADDRESS=:8000
       # - REDIS_SERVER_ADDRESS=redis:6379
+      # - MONITORSTATSD_DOMAIN="telegraf"
     labels:
       logging: promtail
       web.httpserver: app
-    network_mode: "host"        
+    network_mode: host
     depends_on:
       - redis
 
@@ -28,17 +29,17 @@ services:
       context: .
       dockerfile: Dockerfile
       target: app
-    # ports:
-    #   - "8002:8000"
+    ports:
+      - "8002:8000"
     env_file: .env
     environment:
-      # - SERVER_ADDRESS=${SERVER_PORT}
       - SERVER_ADDRESS=:8002
+      # - SERVER_ADDRESS=${SERVER_PORT}
       # - REDIS_SERVER_ADDRESS=redis:6379
     labels:
       logging: promtail
       web.httpserver: app
-    network_mode: "host"        
+    network_mode: host
     depends_on:
       - redis
 
@@ -48,70 +49,72 @@ services:
       context: .
       dockerfile: Dockerfile
       target: app
-    # ports:
-    #   - "8003:8000"
+    ports:
+      - "8003:8000"
     env_file: .env
     environment:
-      # - SERVER_ADDRESS=${SERVER_PORT}
       - SERVER_ADDRESS=:8003
+      # - SERVER_ADDRESS=${SERVER_PORT}
       # - REDIS_SERVER_ADDRESS=redis:6379
     labels:
       logging: promtail
       web.httpserver: app
-    network_mode: "host"        
+    network_mode: host
     depends_on:
       - redis
 
-  prometheus:
-    container_name: prometheus
-    image: prom/prometheus:latest
-    ports:
-      - "9090:9090"
-    volumes:
-      # - prometheus_data:/var/lib/prometheus
-      - "./monitoring/prometheus:/etc/prometheus"
-    privileged: true
+#   prometheus:
+#     container_name: prometheus
+#     image: prom/prometheus:latest
+#     ports:
+#       - "9090:9090"
+#     volumes:
+#       - "./monitoring/prometheus:/etc/prometheus"
+#     privileged: true
 
-  grafana:
-    container_name: grafana
-    image: grafana/grafana
-    ports:
-      - '3000:3000'
-    environment:
-      - GF_SECURITY_ADMIN_PASSWORD=admin
-      - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
-      - DS_PROMETHEUS=prometheus
-    volumes:
-      - "grafana_data:/var/lib/grafana"
-    privileged: true
-    depends_on:
-      - prometheus
+#   grafana:
+#     container_name: grafana
+#     image: grafana/grafana
+#     ports:
+#       - '3000:3000'
+#     environment:
+#       - GF_SECURITY_ADMIN_PASSWORD=admin
+#       - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
+#       - DS_PROMETHEUS=prometheus
+#     volumes:
+#       - "grafana_data:/var/lib/grafana"
+#     privileged: true
+#     depends_on:
+#       - prometheus
   
-  influxdb:
-    image: influxdb:1.8
-    restart: unless-stopped
-    environment:
-      - INFLUXDB_DB=influx
-      - INFLUXDB_ADMIN_USER=admin
-      - INFLUXDB_ADMIN_PASSWORD=adminadmin
-    ports: 
-      - 8086:8086
-    volumes:
-      - ./:/imports
-      - influxdb_data:/var/lib/influxdb
+#   influxdb:
+#     image: influxdb:1.8
+#     restart: unless-stopped
+#     environment:
+#       - INFLUXDB_DB=influx
+#       - INFLUXDB_ADMIN_USER=admin
+#       - INFLUXDB_ADMIN_PASSWORD=adminadmin
+#     ports: 
+#       - 8086:8086
+#     volumes:
+#       - ./:/imports
+#       - influxdb_data:/var/lib/influxdb
 
-  telegraf:
-    image: telegraf:1.18
-    restart: unless-stopped
-    ports: 
-      - '127.0.0.1:8125:8125/udp'
-    depends_on: 
-      - influxdb
-    links:
-      - influxdb
-    volumes:
-      - ./telegraf/etc/telegraf.conf:/etc/telegraf/telegraf.conf:ro
+#   telegraf:
+#     image: telegraf:1.18
+#     restart: unless-stopped
+#     ports: 
+#       - '127.0.0.1:8125:8125/udp'
+#     depends_on: 
+#       - influxdb
+#     links:
+#       - influxdb
+#     volumes:
+#       - ./telegraf/etc/telegraf.conf:/etc/telegraf/telegraf.conf:ro
       
-volumes:
-  grafana_data: {}
-  influxdb_data: {}
+# volumes:
+#   grafana_data: {}
+#   influxdb_data: {}
+networks:
+  dev-net:
+    external: true
