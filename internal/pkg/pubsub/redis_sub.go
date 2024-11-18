@@ -10,6 +10,7 @@ import (
 	"poc-redis-pubsub/internal/domain/dto"
 	"poc-redis-pubsub/internal/pkg/logger"
 	"poc-redis-pubsub/internal/pkg/util"
+	"strconv"
 	"syscall"
 	"time"
 
@@ -99,7 +100,7 @@ func (s *redisSub) listen(ctx context.Context, channel string) {
 						ServiceGroup: metrics.API_IN,
 						ErrorCode:    metrics.Success,
 						HttpCode:     0,
-						CustomTag:    map[string]interface{}{"Received-Cache": p.Msg},
+						CustomTag:    map[string]interface{}{"Msg-Id": strconv.FormatInt(p.UniqueID, 10)},
 						StartTime:    time.Now(),
 					}
 					util.SendMetricLatency(metric)

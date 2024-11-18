@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"poc-redis-pubsub/internal/domain/dto"
 	"poc-redis-pubsub/internal/pkg/util"
+	"strconv"
 	"time"
 
 	"github.com/go-redis/redis/v8"
@@ -40,20 +41,19 @@ func (p *redisPub) PublishMessage(ctx context.Context, channel, msg string) erro
 	return nil
 }
 
-func (p *redisPub) PublishCache(ctx context.Context, channel, cache string) error {
+func (p *redisPub) PublishCache(ctx context.Context, channel string, cache Payload) error {
 	metric := dto.MetricDto{
 		Entity:       "Cache",
 		ServiceGroup: metrics.API_OUT,
 		ErrorCode:    metrics.Success,
-		CustomTag:    map[string]interface{}{"Published-Cache": cache},
+		CustomTag:    map[string]interface{}{"Msg-Id": strconv.FormatInt(cache.UniqueID, 10)},
 		StartTime:    time.Now(),
 	}
-	if err := p.client.Publish(ctx, channel, cache).Err(); err != nil {
+	data := ToJson(cache)
+	if err := p.client.Publish(ctx, channel, data).Err(); err != nil {
 		metric.ErrorCode = metrics.Failed
 		return fmt.Errorf("failed to publish message to channel %s: %v", channel, err)
 	}
-	// customTag := map[string]interface{}{"Publish-": ""}
-	// metric.CustomTag = customTag
 	util.SendMetricLatency(metric)
 	return nil
 }

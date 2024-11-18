@@ -7,6 +7,7 @@ import (
 	"poc-redis-pubsub/internal/pkg/logger"
 	"poc-redis-pubsub/internal/pkg/mq"
 	"poc-redis-pubsub/internal/pkg/pubsub"
+	"time"
 )
 
 type MessageService interface {
@@ -56,7 +57,13 @@ func (s *messageService) GetAllCache(ctx context.Context) (dto.GetAllCacheRespon
 }
 
 func (s *messageService) UpdateCache(ctx context.Context, cache dto.UpdateCacheRequest) (string, error) {
-	data := pubsub.NewJsonPayload(pubsub.TypeCache, cache.Operation, cache.Cache)
+	// data := pubsub.NewJsonPayload(pubsub.TypeCache, cache.Operation, cache.Cache)
+	data := pubsub.Payload{
+		UniqueID:  time.Now().Unix(),
+		Type:      pubsub.TypeCache,
+		Operation: cache.Operation,
+		Msg:       cache.Cache,
+	}
 	err := s.publisher.PublishCache(ctx, "cache", data)
 	if err != nil {
 		logger.Log.Error("failed to update cache")
