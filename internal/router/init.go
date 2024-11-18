@@ -12,7 +12,7 @@ import (
 
 func Init(opts *controller.ControllerOpts) http.Handler {
 	e := echo.New()
-	e.Use(echo_middleware.Recover(), middleware.Logger(), middleware.Monitoring)
+	e.Use(echo_middleware.Recover(), middleware.Logger())
 
 	e.GET("/metrics", echo.WrapHandler(promhttp.Handler()))
 	e.GET("/ping", func(c echo.Context) error {
@@ -21,9 +21,11 @@ func Init(opts *controller.ControllerOpts) http.Handler {
 	e.POST("/message", opts.SendMessage)
 	e.POST("/pubsub/subscribe", opts.SubscribeToChannel)
 	e.POST("/pubsub/unsubscribe", opts.UnsubscribeToChannel)
-	e.POST("/pubsub/message", opts.SendMessagePubSub)
 	e.GET("/cache", opts.GetAllCache)
-	e.PATCH("/pubsub/cache", opts.UpdateCache)
+
+	m := e.Group("", middleware.Monitoring)
+	m.POST("/pubsub/message", opts.SendMessagePubSub)
+	m.PATCH("/pubsub/cache", opts.UpdateCache)
 
 	return e
 }

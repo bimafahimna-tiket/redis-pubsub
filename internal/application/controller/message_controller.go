@@ -4,11 +4,8 @@ import (
 	"net/http"
 	"poc-redis-pubsub/internal/application/service"
 	"poc-redis-pubsub/internal/domain/dto"
-	"poc-redis-pubsub/internal/pkg/util"
-	"time"
 
 	"github.com/labstack/echo/v4"
-	"github.com/tiket/TIX-HOTEL-UTILITIES-GO/metrics"
 )
 
 type MessageController struct {
@@ -37,13 +34,7 @@ func (c *MessageController) SendMessage(ec echo.Context) error {
 }
 
 func (c *MessageController) SendMessagePubSub(ec echo.Context) error {
-	metric := dto.MetricDto{
-		Entity:       "Send-Message",
-		ServiceGroup: metrics.API_IN,
-		ErrorCode:    metrics.Success,
-		HttpCode:     http.StatusOK,
-		StartTime:    time.Now(),
-	}
+	ec.Set("entity", "Send-Message")
 
 	var req dto.MessagePubSubRequest
 	ctx := ec.Request().Context()
@@ -56,7 +47,6 @@ func (c *MessageController) SendMessagePubSub(ec echo.Context) error {
 	if err != nil {
 		return err
 	}
-	util.SendMetricLatency(metric)
 	return ec.String(http.StatusOK, res)
 }
 
@@ -70,6 +60,8 @@ func (c *MessageController) GetAllCache(ec echo.Context) error {
 }
 
 func (c *MessageController) UpdateCache(ec echo.Context) error {
+	ec.Set("entity", "Update-Cache")
+
 	var req dto.UpdateCacheRequest
 	err := ec.Bind(&req)
 	if err != nil {

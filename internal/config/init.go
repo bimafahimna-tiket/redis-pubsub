@@ -7,9 +7,10 @@ import (
 )
 
 type Config struct {
-	App     AppConfig
-	Redis   RedisConfig
-	Monitor MonitorStatsD
+	App       AppConfig
+	Redis     RedisConfig
+	Monitor   MonitorStatsDConfig
+	Container ContainerConfig
 }
 
 func InitConfig() *Config {
@@ -18,8 +19,9 @@ func InitConfig() *Config {
 		logger.Log.Error("failed to load .env")
 	}
 	return &Config{
-		App:     initAppConfig(),
-		Redis:   initRedisConfig(),
-		Monitor: initMonitorStatsD(),
+		App:       initAppConfig(),
+		Redis:     initRedisConfig(),
+		Monitor:   initMonitorStatsDConfig(),
+		Container: initContainerConfig(),
 	}
 }
