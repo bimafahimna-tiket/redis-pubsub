@@ -25,7 +25,7 @@ func Init(opts *controller.ControllerOpts) http.Handler {
 
 	m := e.Group("", middleware.Monitoring)
 	m.POST("/pubsub/message", opts.SendMessagePubSub)
-	m.PATCH("/pubsub/cache", opts.UpdateCache)
+	e.PATCH("/pubsub/cache", opts.UpdateCache)
 
 	return e
 }

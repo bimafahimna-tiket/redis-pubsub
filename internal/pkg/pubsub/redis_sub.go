@@ -7,10 +7,14 @@ import (
 	"os"
 	"os/signal"
 	"poc-redis-pubsub/internal/cache"
+	"poc-redis-pubsub/internal/domain/dto"
 	"poc-redis-pubsub/internal/pkg/logger"
+	"poc-redis-pubsub/internal/pkg/util"
 	"syscall"
+	"time"
 
 	"github.com/go-redis/redis/v8"
+	"github.com/tiket/TIX-HOTEL-UTILITIES-GO/metrics"
 )
 
 type redisSub struct {
@@ -90,6 +94,15 @@ func (s *redisSub) listen(ctx context.Context, channel string) {
 					return
 				}
 				if p.Type == TypeCache {
+					metric := dto.MetricDto{
+						Entity:       "Cache",
+						ServiceGroup: metrics.API_IN,
+						ErrorCode:    metrics.Success,
+						HttpCode:     0,
+						CustomTag:    map[string]interface{}{"Received-Cache": p.Msg},
+						StartTime:    time.Now(),
+					}
+					util.SendMetricLatency(metric)
 					switch {
 					case p.Operation == OperationAdd:
 						cache.Cache[p.Msg] = nil

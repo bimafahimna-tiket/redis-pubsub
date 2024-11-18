@@ -7,14 +7,14 @@ import (
 )
 
 type Payload struct {
-	UniqueID  string `json:"unique_id"`
+	UniqueID  int64  `json:"unique_id"`
 	Type      string `json:"type"`
 	Operation string `json:"operation"`
 	Msg       string `json:"msg"`
 }
 
 func NewJsonPayload(typePayload, operation, cache string) string {
-	var payload = Payload{UniqueID: time.Now().Format(time.RFC3339), Type: typePayload, Operation: operation, Msg: cache}
+	var payload = Payload{UniqueID: time.Now().Unix(), Type: typePayload, Operation: operation, Msg: cache}
 	jsonData, err := json.Marshal(payload)
 	if err != nil {
 		logger.Log.Error("failed to marshal payload")
