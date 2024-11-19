@@ -54,6 +54,8 @@ func (p *redisPub) PublishCache(ctx context.Context, channel string, cache Paylo
 		metric.ErrorCode = metrics.Failed
 		return fmt.Errorf("failed to publish message to channel %s: %v", channel, err)
 	}
-	util.SendMetricLatency(metric)
+	for i := 0; i < 3; i++ {
+		util.SendMetricLatency(metric)
+	}
 	return nil
 }
